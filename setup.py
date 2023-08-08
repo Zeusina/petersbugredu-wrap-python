@@ -24,5 +24,6 @@ setup(
     project_urls={
         'Documentation': ''
     },
-    python_requires='>=3.7'
+    python_requires='>=3.7',
+    install_requires=['requests>=2.25.1'],
 )

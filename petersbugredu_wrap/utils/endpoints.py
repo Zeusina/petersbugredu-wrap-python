@@ -1,0 +1,1 @@
+LOGIN_URL="https://dnevnik2.petersburgedu.ru/api/user/auth/login"

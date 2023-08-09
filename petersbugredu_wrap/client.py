@@ -3,7 +3,7 @@ import logging
 import requests
 from petersbugredu_wrap.utils import endpoints, request_parameters
 from petersbugredu_wrap.errors.invalid_login_or_password_exc import InvalidLoginOrPasswordException
-from petersbugredu_wrap.types.child import Child
+from petersbugredu_wrap.types import Child, Teacher
 
 
 class Client:
@@ -47,7 +47,7 @@ class Client:
             raise InvalidLoginOrPasswordException
         else:
             raise ValueError
-        
+
     def login_by_token(self, token: str) -> None:
         """
         This function will store JWT token as Client class parameter
@@ -59,7 +59,7 @@ class Client:
         self.logger.debug("Registered by token")
         self._token = token
 
-    def get_child_list(self) -> list:
+    def get_child_list(self) -> list[Child]:
         """
         This function will get child list from petersburg educational portal, store it as class parameter and return
         it as list.
@@ -95,3 +95,39 @@ class Client:
                     education_id=education_id
                 ))
             return self.children
+
+    def get_teacher_list(self, education_id: int) -> list[Teacher]:
+        """
+        Function to get list of teachers of concrete student
+        :param education_id: Student education id
+        :return: List of teachers
+        """
+        self.logger.debug("Started request to get teacher list")
+        teacher_list = []
+        url = endpoints.TEACHER_LIST_URL.replace("{{page}}", "1").replace("{{education_id}}", str(education_id))
+        payload = {}
+        headers = {}
+        cookies = {
+            "X-JWT-Token": self._token
+        }
+
+        response = requests.request("GET", url, headers=headers, data=payload, cookies=cookies)
+        response_json = json.loads(response.text)
+        self.logger.debug(
+            "Get the response to get teacher list with %code% status code".replace("%code%", str(response.status_code)))
+        if response.status_code != 200:
+            return []
+        for teacher in response_json["data"]["items"]:
+            firstname = teacher.get("firstname", "")
+            surname = teacher.get("surname", "")
+            middlename = teacher.get("middlename", "")
+            position_name = teacher.get("position_name", "")
+            subjects = teacher.get("subjects", "")
+            teacher_list.append(Teacher(
+                firstname=firstname,
+                surname=surname,
+                middlename=middlename,
+                position_name=position_name,
+                subjects=subjects
+            ))
+        return teacher_list

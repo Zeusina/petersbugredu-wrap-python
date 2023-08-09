@@ -1,7 +1,7 @@
 class Teacher:
     def __init__(self, firstname: str, surname: str, middlename: str, position_name: str, subjects: list[dict]):
         """
-        Class Teacher represents school teachers
+        Class Teacher represents school teachers returned by API
         :param firstname: Teacher firstname
         :param surname: Teacher surname
         :param middlename: Teacher middlename

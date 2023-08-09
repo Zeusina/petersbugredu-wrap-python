@@ -1,7 +1,7 @@
 import json
 import logging
 import requests
-from petersbugredu_wrap.utils import endpoints
+from petersbugredu_wrap.utils import endpoints, request_parameters
 from petersbugredu_wrap.errors.invalid_login_or_password_exc import InvalidLoginOrPasswordException
 from petersbugredu_wrap.types.child import Child
 
@@ -31,12 +31,7 @@ class Client:
         payload = (
             '{"type": "email", "login": "%login%", "activation_code": null, "password": "%password%", "_isEmpty": '
             'false}'.replace("%login%", login).replace("%password%", password))
-        headers = {
-            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) '
-                          'Chrome/114.0.0.0 Safari/537.36',
-            'Accept': 'application/json, text/plain, */*',
-            'Content-Type': 'application/json'
-        }
+        headers = request_parameters.headers
         self.logger.debug("Sending login request as %login%".replace("%login%", login))
         response = requests.request("POST", url, headers=headers, data=payload)
         self.logger.debug(

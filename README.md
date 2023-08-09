@@ -1,5 +1,6 @@
 # Petersburgedu wrap
-This module is designed for work with petersburgedu internal API.
+This module is designed for work with petersburgedu internal API.  
+[Full documentaton(WIP)](https://zeusina.gitbook.io/petersburgedu-wrap/)
 
 ## English
 ### Work in progress

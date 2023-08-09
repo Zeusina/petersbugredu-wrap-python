@@ -13,4 +13,3 @@ class Teacher:
         self.middlename = middlename
         self.position_name = position_name
         self.subjects = subjects
-        raise NotImplementedError

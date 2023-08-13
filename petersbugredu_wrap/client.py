@@ -1,9 +1,11 @@
 import json
 import logging
 import requests
+
+from petersbugredu_wrap.types.education import Education
 from petersbugredu_wrap.utils import endpoints, request_parameters
 from petersbugredu_wrap.errors.invalid_login_or_password_exc import InvalidLoginOrPasswordException
-from petersbugredu_wrap.types import Child, Teacher
+from petersbugredu_wrap.types import Child, Teacher, ActionPayload, Identity
 
 
 class Client:
@@ -83,51 +85,56 @@ class Client:
             firstname = child.get("firstname", "")
             surname = child.get("surname", "")
             middlename = child.get("middlename", "")
-            educations = child["educations"]
-            education_id = child["educations"][0]["education_id"]
+            hash_uid = child.get("hash_uid", "")
+            action_payload = ActionPayload(
+                can_apply_for_distance=child["action_payload"].get("can_apply_for_distance", True),
+                can_print=child["action_payload"].get("can_print", None))
+            identity = Identity(id=child["identity"]["id"])
+            educations: list[Education] = []
+            for education in child["educations"]:
+                push_subscribe = education.get("push_subscribe", "true")
+                education_id = education["education_id"]
+                group_id = education["group_id"]
+                group_name = education.get("group_name", "")
+                institution_id = education["institution_id"]
+                institution_name = education.get("institution_name", "")
+                is_active = education.get("is_active", None)
+                distance_education = education.get("distance_education", False)
+                distance_education_updated_at = education.get("distance_education_updated_at", "")
+                parent_firstname = education.get("parent_firstname", "")
+                parent_surname = education.get("parent_surname", "")
+                parent_middlename = education.get("parent_middlename", "")
+                parent_email = education.get("parent_email", "")
+                jurisdiction_name = education.get("jurisdiction_name", "")
+                jurisdiction_id = education["jurisdiction_id"]
+                edu = Education(push_subscribe=push_subscribe,
+                                education_id=education_id,
+                                group_id=group_id,
+                                group_name=group_name,
+                                institution_id=institution_id,
+                                institution_name=institution_name,
+                                is_active=is_active,
+                                distance_education=distance_education,
+                                distance_education_updated_at=distance_education_updated_at,
+                                parent_firstname=parent_firstname,
+                                parent_surname=parent_surname,
+                                parent_middlename=parent_middlename,
+                                parent_email=parent_email,
+                                jurisdiction_name=jurisdiction_name,
+                                jurisdiction_id=jurisdiction_id)
+                educations.append(edu)
 
             self.children.append(
                 Child(
-                    name=firstname,
+                    firstname=firstname,
                     surname=surname,
                     middlename=middlename,
                     educations=educations,
-                    education_id=education_id
+                    hash_uid=hash_uid,
+                    action_payload=action_payload,
+                    identity=identity,
+                    token=self._token
                 ))
             return self.children
 
-    def get_teacher_list(self, education_id: int) -> list[Teacher]:
-        """
-        Function to get list of teachers of concrete student
-        :param education_id: Student education id
-        :return: List of teachers
-        """
-        self.logger.debug("Started request to get teacher list")
-        teacher_list = []
-        url = endpoints.TEACHER_LIST_URL.replace("{{page}}", "1").replace("{{education_id}}", str(education_id))
-        payload = {}
-        headers = {}
-        cookies = {
-            "X-JWT-Token": self._token
-        }
 
-        response = requests.request("GET", url, headers=headers, data=payload, cookies=cookies)
-        response_json = json.loads(response.text)
-        self.logger.debug(
-            "Get the response to get teacher list with %code% status code".replace("%code%", str(response.status_code)))
-        if response.status_code != 200:
-            return []
-        for teacher in response_json["data"]["items"]:
-            firstname = teacher.get("firstname", "")
-            surname = teacher.get("surname", "")
-            middlename = teacher.get("middlename", "")
-            position_name = teacher.get("position_name", "")
-            subjects = teacher.get("subjects", "")
-            teacher_list.append(Teacher(
-                firstname=firstname,
-                surname=surname,
-                middlename=middlename,
-                position_name=position_name,
-                subjects=subjects
-            ))
-        return teacher_list

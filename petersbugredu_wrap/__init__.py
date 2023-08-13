@@ -1,1 +1,2 @@
-import petersbugredu_wrap.client
+from petersbugredu_wrap.client import Client
+import petersbugredu_wrap.types

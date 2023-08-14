@@ -137,5 +137,3 @@ class Client:
                     token=self._token
                 ))
             return self.children
-
-

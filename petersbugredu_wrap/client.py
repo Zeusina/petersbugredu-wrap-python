@@ -5,7 +5,7 @@ import requests
 from petersbugredu_wrap.types.education import Education
 from petersbugredu_wrap.utils import endpoints, request_parameters
 from petersbugredu_wrap.errors.invalid_login_or_password_exc import InvalidLoginOrPasswordException
-from petersbugredu_wrap.types import Child, Teacher, ActionPayload, Identity
+from petersbugredu_wrap.types import Child, ActionPayload, Identity
 
 
 class Client:

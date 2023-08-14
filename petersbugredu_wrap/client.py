@@ -65,6 +65,7 @@ class Client:
         """
         This function will get child list from petersburg educational portal, store it as class parameter and return
         it as list.
+        :rtype: list[Child]
         :return: list
         """
         url = endpoints.RELATED_CHILD_LIST_URL

@@ -14,12 +14,15 @@ class Child:
     def __init__(self, firstname: str, surname: str, middlename: str, educations: list[Education],
                  action_payload: ActionPayload, hash_uid: str, identity: Identity, token: str):
         """
-        This class will store information about child as class parameters/
-        :param name:
+        Class represents Children API entity
+        :param firstname:
         :param surname:
         :param middlename:
-        :param education_id:
         :param educations:
+        :param action_payload:
+        :param hash_uid:
+        :param identity:
+        :param token: JWT-Token for using methods
         """
         self.middlename = middlename
         self.firstname = firstname
@@ -35,7 +38,6 @@ class Child:
     def get_teacher_list(self) -> list[Teacher]:
         """
         Function to get list of teachers of concrete student
-        :param education_id: Student education id
         :return: List of teachers
         """
         education_id = self.educations[0].education_id

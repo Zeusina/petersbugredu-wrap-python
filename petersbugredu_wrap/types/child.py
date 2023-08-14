@@ -33,7 +33,7 @@ class Child:
         self.identity = identity
         self.logger = logging.getLogger("Child - %id%".replace("%id%", str(self.identity.id)))
         self._token = token
-        self.logger.debug("Child succesfully created")
+        self.logger.debug("Child successfully created")
 
     def get_teacher_list(self) -> list[Teacher]:
         """

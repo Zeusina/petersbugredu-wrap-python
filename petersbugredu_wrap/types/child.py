@@ -89,17 +89,18 @@ class Child:
         cookie = {"X-JWT-Token": self._token}
         self.logger.debug("Data for get marks by period prepaired")
         pages = []
-        response = requests.request("GET", url.replace("{{page}}", "0"), cookies=cookie)
-        self.logger.debug("Made request 1st page of marks with status code %code%"
-                          .replace("%code%", str(response.status_code)))
-        pages.append(json.loads(response.text))
-        total_pages: int = pages[0]["data"]["total_pages"]
-        if total_pages > 1:
-            for page_number in range(2, total_pages + 1):
-                response = requests.request("GET", url.replace("{{page}}", str(page_number)), cookies=cookie)
-                pages.append(json.loads(response.text))
-                self.logger.debug("Made request %page% page of marks with status code %code%"
-                                  .replace("%code%", str(response.status_code)).replace("%page%", str(page_number)))
+        with requests.session() as session:
+            response = session.request("GET", url.replace("{{page}}", "0"), cookies=cookie)
+            self.logger.debug("Made request 1st page of marks with status code %code%"
+                              .replace("%code%", str(response.status_code)))
+            pages.append(json.loads(response.text))
+            total_pages: int = pages[0]["data"]["total_pages"]
+            if total_pages > 1:
+                for page_number in range(2, total_pages + 1):
+                    response = session.request("GET", url.replace("{{page}}", str(page_number)), cookies=cookie)
+                    pages.append(json.loads(response.text))
+                    self.logger.debug("Made request %page% page of marks with status code %code%"
+                                      .replace("%code%", str(response.status_code)).replace("%page%", str(page_number)))
         marks = []
         for page in pages:
             for entry in page["data"]["items"]:

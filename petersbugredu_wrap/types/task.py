@@ -13,5 +13,4 @@ class Task:
         self.task_kind_code = task_kind_code
         self.task_code = task_code
         self.task_name = task_name
-        raise NotImplementedError
     

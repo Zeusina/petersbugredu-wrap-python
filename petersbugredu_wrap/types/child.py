@@ -9,12 +9,12 @@ from petersbugredu_wrap.types.mark_entry import MarkEntry
 from petersbugredu_wrap.types.teacher import Teacher
 from petersbugredu_wrap.types.identity import Identity
 from petersbugredu_wrap.types.education import Education
-from petersbugredu_wrap.utils import endpoints
+from petersbugredu_wrap.utils import endpoints, request_parameters
 
 
 class Child:
     def __init__(self, firstname: str, surname: str, middlename: str, educations: list[Education],
-                 action_payload: ActionPayload, hash_uid: str, identity: Identity, token: str):
+                 action_payload: ActionPayload, hash_uid: str, identity: Identity, token: str) -> None:
         """
         Class represents Children API entity
         :param firstname:
@@ -47,7 +47,7 @@ class Child:
         teacher_list = []
         url = endpoints.TEACHER_LIST_URL.replace("{{page}}", "1").replace("{{education_id}}", str(education_id))
         payload = {}
-        headers = {}
+        headers = request_parameters.headers
         cookies = {
             "X-JWT-Token": self._token
         }
@@ -87,17 +87,19 @@ class Child:
                 .replace("{{date_from}}", date_from.strftime("%d.%m.%Y")))
                .replace("{{date_to}}", date_to.strftime("%d.%m.%Y")))
         cookie = {"X-JWT-Token": self._token}
+        headers = request_parameters.headers
         self.logger.debug("Data for get marks by period prepaired")
         pages = []
         with requests.session() as session:
-            response = session.request("GET", url.replace("{{page}}", "0"), cookies=cookie)
+            response = session.request("GET", url.replace("{{page}}", "0"), cookies=cookie, headers=headers)
             self.logger.debug("Made request 1st page of marks with status code %code%"
                               .replace("%code%", str(response.status_code)))
             pages.append(json.loads(response.text))
             total_pages: int = pages[0]["data"]["total_pages"]
             if total_pages > 1:
                 for page_number in range(2, total_pages + 1):
-                    response = session.request("GET", url.replace("{{page}}", str(page_number)), cookies=cookie)
+                    response = session.request("GET", url.replace("{{page}}", str(page_number)), cookies=cookie,
+                                               headers=headers)
                     pages.append(json.loads(response.text))
                     self.logger.debug("Made request %page% page of marks with status code %code%"
                                       .replace("%code%", str(response.status_code)).replace("%page%", str(page_number)))

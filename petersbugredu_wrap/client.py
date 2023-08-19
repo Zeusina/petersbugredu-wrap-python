@@ -71,7 +71,7 @@ class Client:
         url = endpoints.RELATED_CHILD_LIST_URL
         self.logger.info("Preparing data for getting child list")
         payload = {}
-        headers = {}
+        headers = request_parameters.headers
         cookies = {
             "X-JWT-Token": self._token
         }

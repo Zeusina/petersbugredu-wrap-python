@@ -5,7 +5,10 @@ import logging
 import requests
 
 from petersbugredu_wrap.types.action_payload import ActionPayload
+from petersbugredu_wrap.types.estimate import Estimate
+from petersbugredu_wrap.types.lesson_entry import LessonEntry
 from petersbugredu_wrap.types.mark_entry import MarkEntry
+from petersbugredu_wrap.types.task import Task
 from petersbugredu_wrap.types.teacher import Teacher
 from petersbugredu_wrap.types.identity import Identity
 from petersbugredu_wrap.types.education import Education
@@ -73,7 +76,7 @@ class Child:
             ))
         return teacher_list
 
-    def get_mark_list_by_period(self, date_from: datetime.date, date_to: datetime.date, education_number: int = 0)\
+    def get_mark_list_by_period(self, date_from: datetime.date, date_to: datetime.date, education_number: int = 0) \
             -> list[MarkEntry]:
         """
         Function for getting mark list from API
@@ -88,7 +91,7 @@ class Child:
                .replace("{{date_to}}", date_to.strftime("%d.%m.%Y")))
         cookie = {"X-JWT-Token": self._token}
         headers = request_parameters.headers
-        self.logger.debug("Data for get marks by period prepaired")
+        self.logger.debug("Data for get marks by period prepared")
         pages = []
         with requests.session() as session:
             response = session.request("GET", url.replace("{{page}}", "0"), cookies=cookie, headers=headers)
@@ -131,3 +134,89 @@ class Child:
                     estimate_comment=estimate_comment)
                 marks.append(mark_entry)
         return marks
+
+    def get_lesson_list_by_time(self, date_from: datetime.date, date_to: datetime.date, education_number: int = 0) \
+            -> list[LessonEntry]:
+        """
+        Function to get lessons by period
+        :param date_from:
+        :param date_to:
+        :param education_number:
+        :return:
+        """
+        pages = []
+        url = (endpoints.LESSONS_BY_DATE_URL.replace("{{date_from}}", date_from.strftime("%d.%m.%Y"))
+               .replace("{{date_to}}", date_to.strftime("%d.%m.%Y"))
+               .replace("{{education_id}}", str(self.educations[education_number].education_id)))
+        cookies = {
+            "X-JWT-Token": self._token
+        }
+        self.logger.debug("Data for get lessons by period prepared")
+        headers = request_parameters.headers
+        with requests.session() as session:
+            response = session.request("GET", url.replace("{{page}}", "0"), cookies=cookies, headers=headers)
+            self.logger.debug("Made request 1st page of lessons with status code %code%"
+                              .replace("%code%", str(response.status_code)))
+            pages.append(json.loads(response.text))
+            total_pages: int = pages[0]["data"]["total_pages"]
+            if total_pages > 1:
+                for page_number in range(2, total_pages + 1):
+                    response = session.request("GET", url.replace("{{page}}", str(page_number)), cookies=cookies,
+                                               headers=headers)
+                    pages.append(json.loads(response.text))
+                    self.logger.debug("Made request %page% page of lessons with status code %code%"
+                                      .replace("%code%", str(response.status_code)).replace("%page%", str(page_number)))
+        lessons = []
+        for page in pages:
+            for entry in page["data"]["items"]:
+                identity = Identity(entry["identity"]["id"], entry["identity"].get("uid", None))
+                number = entry.get("number", 0)
+                datetime_from = datetime.datetime.strptime(entry.get("datetime_from", "01.01.1970"),
+                                                           "%d.%m.%Y %H:%M:%S")
+                datetime_to = datetime.datetime.strptime(entry.get("datetime_to", "01.01.1970"),
+                                                         "%d.%m.%Y %H:%M:%S")
+                subject_id = entry.get("subject_id", 0)
+                subject_name = entry.get("subject_name", "")
+                content_name = entry.get("content_name", "")
+                content_description = entry.get("content_description", None)
+                content_additional_material = entry.get("content_additional_material", "")
+                tasks = []
+                for task in entry["tasks"]:
+                    task_name = task.get("task_name", "")
+                    task_code = task.get("task_code", None)
+                    task_kind_code = task.get("task_kind_code", "")
+                    task_kind_name = task.get("task_kind_name", "")
+                    files = task.get("files", [])
+                    tasks.append(Task(task_name=task_name,
+                                      task_code=task_code,
+                                      task_kind_code=task_kind_code,
+                                      task_kind_name=task_kind_name,
+                                      files=files))
+                estimates = []
+                for estimate in entry["estimates"]:
+                    estimate_type_code = estimate.get("estimate_type_code", "")
+                    estimate_type_name = estimate.get("estimate_type_name", "")
+                    estimate_value_code = estimate.get("estimate_value_code", "")
+                    estimate_value_name = estimate.get("estimate_value_name", "")
+                    estimate_comment = estimate.get("estimate_comment", None)
+                    estimates.append(Estimate(
+                        estimate_type_code=estimate_type_code,
+                        estimate_type_name=estimate_type_name,
+                        estimate_value_code=estimate_value_code,
+                        estimate_value_name=estimate_value_name,
+                        estimate_comment=estimate_comment))
+                lessons.append(LessonEntry(
+                    identity=identity,
+                    number=number,
+                    datetime_from=datetime_from,
+                    datetime_to=datetime_to,
+                    subject_id=subject_id,
+                    subject_name=subject_name,
+                    content_name=content_name,
+                    content_description=content_description,
+                    content_additional_material=content_additional_material,
+                    tasks=tasks,
+                    estimates=estimates,
+                    action_payload=ActionPayload()
+                ))
+        return lessons

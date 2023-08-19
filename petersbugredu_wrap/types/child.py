@@ -135,7 +135,7 @@ class Child:
                 marks.append(mark_entry)
         return marks
 
-    def get_lesson_list_by_time(self, date_from: datetime.date, date_to: datetime.date, education_number: int = 0) \
+    def get_lesson_list_by_period(self, date_from: datetime.date, date_to: datetime.date, education_number: int = 0) \
             -> list[LessonEntry]:
         """
         Function to get lessons by period

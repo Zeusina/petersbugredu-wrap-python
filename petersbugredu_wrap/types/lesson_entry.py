@@ -1,6 +1,6 @@
 import datetime
 
-from petersbugredu_wrap.types import ActionPayload
+from petersbugredu_wrap.types.action_payload import ActionPayload
 from petersbugredu_wrap.types.estimate import Estimate
 from petersbugredu_wrap.types.identity import Identity
 from petersbugredu_wrap.types.task import Task

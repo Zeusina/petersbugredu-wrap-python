@@ -136,4 +136,4 @@ class Client:
                     identity=identity,
                     token=self._token
                 ))
-            return self.children
+        return self.children

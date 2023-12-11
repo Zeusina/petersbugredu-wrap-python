@@ -17,7 +17,8 @@ from petersbugredu_wrap.utils import endpoints, request_parameters
 
 class Child:
     def __init__(self, firstname: str, surname: str, middlename: str, educations: list[Education],
-                 action_payload: ActionPayload, hash_uid: str, identity: Identity, token: str) -> None:
+                 action_payload: ActionPayload, hash_uid: str,
+                 identity: Identity, token: str) -> None:
         """
         Class represents Children API entity
         :param firstname:
@@ -56,7 +57,7 @@ class Child:
         }
 
         response = requests.request("GET", url, headers=headers, data=payload, cookies=cookies)
-        response_json = json.loads(response.text)
+        response_json = response.json()
         self.logger.debug(
             "Get the response to get teacher list with %code% status code".replace("%code%", str(response.status_code)))
         if response.status_code != 200:
@@ -97,13 +98,13 @@ class Child:
             response = session.request("GET", url.replace("{{page}}", "0"), cookies=cookie, headers=headers)
             self.logger.debug("Made request 1st page of marks with status code %code%"
                               .replace("%code%", str(response.status_code)))
-            pages.append(json.loads(response.text))
+            pages.append(response.json())
             total_pages: int = pages[0]["data"]["total_pages"]
             if total_pages > 1:
                 for page_number in range(2, total_pages + 1):
                     response = session.request("GET", url.replace("{{page}}", str(page_number)), cookies=cookie,
                                                headers=headers)
-                    pages.append(json.loads(response.text))
+                    pages.append(response.json())
                     self.logger.debug("Made request %page% page of marks with status code %code%"
                                       .replace("%code%", str(response.status_code)).replace("%page%", str(page_number)))
         marks = []
@@ -157,13 +158,13 @@ class Child:
             response = session.request("GET", url.replace("{{page}}", "0"), cookies=cookies, headers=headers)
             self.logger.debug("Made request 1st page of lessons with status code %code%"
                               .replace("%code%", str(response.status_code)))
-            pages.append(json.loads(response.text))
+            pages.append(response.json())
             total_pages: int = pages[0]["data"]["total_pages"]
             if total_pages > 1:
                 for page_number in range(2, total_pages + 1):
                     response = session.request("GET", url.replace("{{page}}", str(page_number)), cookies=cookies,
                                                headers=headers)
-                    pages.append(json.loads(response.text))
+                    pages.append(response.json())
                     self.logger.debug("Made request %page% page of lessons with status code %code%"
                                       .replace("%code%", str(response.status_code)).replace("%page%", str(page_number)))
         lessons = []

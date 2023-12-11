@@ -39,7 +39,7 @@ class Client:
         self.logger.debug(
             "Request was successfully sent, status code: %code%".replace("%code%", str(response.status_code)))
         if response.status_code == 200:
-            json_response: dict = json.loads(response.text)
+            json_response: dict = response.json()
             token = json_response.get("data", None).get("token", None)
             if token:
                 self._token = token
@@ -81,7 +81,7 @@ class Client:
             "Response with child list return %code% - status code".replace("%code%", str(response.status_code)))
         if response.status_code != 200:
             return []
-        response_json: dict = json.loads(response.text)
+        response_json: dict = response.json()
         for child in response_json["data"]["items"]:
             firstname = child.get("firstname", "")
             surname = child.get("surname", "")

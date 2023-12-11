@@ -2,9 +2,9 @@ import datetime
 
 
 class MarkEntry:
-    def __init__(self, id: int, education_id: int, lesson_id: int, subject_id: int, subject_name: str, date: datetime.datetime,
-                 estimate_value_code: str, estimate_value_name: str, estimate_type_code: str, estimate_type_name: str,
-                 estimate_comment: str):
+    def __init__(self, id: int, education_id: int, lesson_id: int, subject_id: int,
+                 subject_name: str, date: datetime.datetime,estimate_value_code: str, estimate_value_name: str,
+                 estimate_type_code: str, estimate_type_name: str, estimate_comment: str):
         """
         Class represents mark entry in API
         :param id:

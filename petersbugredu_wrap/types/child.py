@@ -1,5 +1,5 @@
+import dataclasses
 import datetime
-import json
 import logging
 
 import requests
@@ -15,31 +15,36 @@ from petersbugredu_wrap.types.education import Education
 from petersbugredu_wrap.utils import endpoints, request_parameters
 
 
+@dataclasses.dataclass
 class Child:
-    def __init__(self, firstname: str, surname: str, middlename: str, educations: list[Education],
-                 action_payload: ActionPayload, hash_uid: str,
-                 identity: Identity, token: str) -> None:
+    """
+    Class represents Children API entity
+    :param firstname:
+    :param surname:
+    :param middlename:
+    :param educations:
+    :param action_payload:
+    :param hash_uid:
+    :param identity:
+    :param token: JWT-Token for using methods
+    """
+    firstname: str
+    middlename: str
+    surname: str
+    educations: list[Education]
+    action_payload: ActionPayload
+    hash_uid: str
+    identity: Identity
+    token: str
+
+    def __post_init__(self) -> None:
         """
         Class represents Children API entity
-        :param firstname:
-        :param surname:
-        :param middlename:
-        :param educations:
-        :param action_payload:
-        :param hash_uid:
-        :param identity:
-        :param token: JWT-Token for using methods
         """
-        self.middlename = middlename
-        self.firstname = firstname
-        self.surname = surname
-        self.educations = educations
-        self.action_payload = action_payload
-        self.hash_uid = hash_uid
-        self.identity = identity
         self.logger = logging.getLogger("Child - %id%".replace("%id%", str(self.identity.id)))
-        self._token = token
         self.logger.debug("Child successfully created")
+        self._token = self.token
+        del self.token
 
     def get_teacher_list(self) -> list[Teacher]:
         """
@@ -56,7 +61,7 @@ class Child:
             "X-JWT-Token": self._token
         }
 
-        response = requests.request("GET", url, headers=headers, data=payload, cookies=cookies)
+        response = requests.request("GET", url, headers=headers, data=payload, cookies=cookies, timeout=1000)
         response_json = response.json()
         self.logger.debug(
             "Get the response to get teacher list with %code% status code".replace("%code%", str(response.status_code)))
@@ -99,41 +104,28 @@ class Child:
             self.logger.debug("Made request 1st page of marks with status code %code%"
                               .replace("%code%", str(response.status_code)))
             pages.append(response.json())
-            total_pages: int = pages[0]["data"]["total_pages"]
-            if total_pages > 1:
+
+            if (total_pages := pages[0]["data"]["total_pages"]) > 1:
                 for page_number in range(2, total_pages + 1):
                     response = session.request("GET", url.replace("{{page}}", str(page_number)), cookies=cookie,
                                                headers=headers)
                     pages.append(response.json())
                     self.logger.debug("Made request %page% page of marks with status code %code%"
                                       .replace("%code%", str(response.status_code)).replace("%page%", str(page_number)))
-        marks = []
-        for page in pages:
-            for entry in page["data"]["items"]:
-                id = entry["id"]
-                education_id = entry["education_id"]
-                lesson_id = entry.get("lesson_id", 0)
-                subject_id = entry["subject_id"]
-                subject_name = entry["subject_name"]
-                date = datetime.datetime.strptime(entry["date"], "%d.%m.%Y")
-                estimate_value_code = entry.get("estimate_value_code", "")
-                estimate_value_name = entry.get("estimate_value_name", "")
-                estimate_type_code = entry.get("estimate_type_code", "")
-                estimate_type_name = entry.get("estimate_type_name", "")
-                estimate_comment = entry.get("estimate_comment", "")
-                mark_entry = MarkEntry(
-                    id=id,
-                    education_id=education_id,
-                    lesson_id=lesson_id,
-                    subject_id=subject_id,
-                    subject_name=subject_name,
-                    date=date,
-                    estimate_value_code=estimate_value_code,
-                    estimate_value_name=estimate_value_name,
-                    estimate_type_code=estimate_type_code,
-                    estimate_type_name=estimate_type_name,
-                    estimate_comment=estimate_comment)
-                marks.append(mark_entry)
+        marks = [MarkEntry(
+            id=entry["id"],
+            education_id=entry["education_id"],
+            lesson_id=entry.get("lesson_id", 0),
+            subject_id=entry["subject_id"],
+            subject_name=entry["subject_name"],
+            date=datetime.datetime.strptime(entry["date"], "%d.%m.%Y"),
+            estimate_value_code=entry.get("estimate_value_code", ""),
+            estimate_value_name=entry.get("estimate_value_name", ""),
+            estimate_type_code=entry.get("estimate_type_code", ""),
+            estimate_type_name=entry.get("estimate_type_name", ""),
+            estimate_comment=entry.get("estimate_comment", ""))
+            for page in pages
+            for entry in page["data"]["items"]]
         return marks
 
     def get_lesson_list_by_period(self, date_from: datetime.date, date_to: datetime.date, education_number: int = 0) \
@@ -159,8 +151,7 @@ class Child:
             self.logger.debug("Made request 1st page of lessons with status code %code%"
                               .replace("%code%", str(response.status_code)))
             pages.append(response.json())
-            total_pages: int = pages[0]["data"]["total_pages"]
-            if total_pages > 1:
+            if (total_pages := pages[0]["data"]["total_pages"]) > 1:
                 for page_number in range(2, total_pages + 1):
                     response = session.request("GET", url.replace("{{page}}", str(page_number)), cookies=cookies,
                                                headers=headers)
@@ -170,52 +161,33 @@ class Child:
         lessons = []
         for page in pages:
             for entry in page["data"]["items"]:
-                identity = Identity(entry["identity"]["id"], entry["identity"].get("uid", None))
-                number = entry.get("number", 0)
-                datetime_from = datetime.datetime.strptime(entry.get("datetime_from", "01.01.1970"),
-                                                           "%d.%m.%Y %H:%M:%S")
-                datetime_to = datetime.datetime.strptime(entry.get("datetime_to", "01.01.1970"),
-                                                         "%d.%m.%Y %H:%M:%S")
-                subject_id = entry.get("subject_id", 0)
-                subject_name = entry.get("subject_name", "")
-                content_name = entry.get("content_name", "")
-                content_description = entry.get("content_description", None)
-                content_additional_material = entry.get("content_additional_material", "")
                 tasks = []
                 for task in entry["tasks"]:
-                    task_name = task.get("task_name", "")
-                    task_code = task.get("task_code", None)
-                    task_kind_code = task.get("task_kind_code", "")
-                    task_kind_name = task.get("task_kind_name", "")
                     files = task.get("files", [])
-                    tasks.append(Task(task_name=task_name,
-                                      task_code=task_code,
-                                      task_kind_code=task_kind_code,
-                                      task_kind_name=task_kind_name,
+                    tasks.append(Task(task_name=task.get("task_name", ""),
+                                      task_code=task.get("task_code", None),
+                                      task_kind_code=task.get("task_kind_code", ""),
+                                      task_kind_name=task.get("task_kind_name", ""),
                                       files=files))
-                estimates = []
-                for estimate in entry["estimates"]:
-                    estimate_type_code = estimate.get("estimate_type_code", "")
-                    estimate_type_name = estimate.get("estimate_type_name", "")
-                    estimate_value_code = estimate.get("estimate_value_code", "")
-                    estimate_value_name = estimate.get("estimate_value_name", "")
-                    estimate_comment = estimate.get("estimate_comment", None)
-                    estimates.append(Estimate(
-                        estimate_type_code=estimate_type_code,
-                        estimate_type_name=estimate_type_name,
-                        estimate_value_code=estimate_value_code,
-                        estimate_value_name=estimate_value_name,
-                        estimate_comment=estimate_comment))
+                estimates = [Estimate(
+                    estimate_type_code=estimate.get("estimate_type_code", ""),
+                    estimate_type_name=estimate.get("estimate_type_name", ""),
+                    estimate_value_code=estimate.get("estimate_value_code", ""),
+                    estimate_value_name=estimate.get("estimate_value_name", ""),
+                    estimate_comment=estimate.get("estimate_comment", None))
+                    for estimate in entry["estimates"]]
                 lessons.append(LessonEntry(
-                    identity=identity,
-                    number=number,
-                    datetime_from=datetime_from,
-                    datetime_to=datetime_to,
-                    subject_id=subject_id,
-                    subject_name=subject_name,
-                    content_name=content_name,
-                    content_description=content_description,
-                    content_additional_material=content_additional_material,
+                    identity=Identity(entry["identity"]["id"], entry["identity"].get("uid", None)),
+                    number=entry.get("number", 0),
+                    datetime_from=datetime.datetime.strptime(entry.get("datetime_from", "01.01.1970"),
+                                                             "%d.%m.%Y %H:%M:%S"),
+                    datetime_to=datetime.datetime.strptime(entry.get("datetime_to", "01.01.1970"),
+                                                           "%d.%m.%Y %H:%M:%S"),
+                    subject_id=entry.get("subject_id", 0),
+                    subject_name=entry.get("subject_name", ""),
+                    content_name=entry.get("content_name", ""),
+                    content_description=entry.get("content_description", None),
+                    content_additional_material=entry.get("content_additional_material", ""),
                     tasks=tasks,
                     estimates=estimates,
                     action_payload=ActionPayload()

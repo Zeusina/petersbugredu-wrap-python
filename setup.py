@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 
 def readme():
-    with open('README.md', 'r') as f:
+    with open('README.md', 'r', encoding="utf8") as f:
         return f.read()
 
 
@@ -22,8 +22,9 @@ setup(
     ],
     keywords='api python petersburgedu',
     project_urls={
+        'Source': 'https://github.com/Zeusina/petersbugredu-wrap-python',
         'Documentation': ''
     },
-    python_requires='>=3.7',
+    python_requires='>=3.8',
     install_requires=['requests>=2.25.1'],
 )

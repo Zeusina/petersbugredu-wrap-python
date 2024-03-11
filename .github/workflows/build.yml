@@ -1,0 +1,33 @@
+name: 'Build'
+
+on:
+  push:
+    branches:
+    - master
+
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: "Set up python"
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.10"
+      - name: "Set version variable"
+        shell: bash
+        run: echo "WHL_VERSION=$(python setup.py --version)" >> $GITHUB_ENV
+      - name: "Prepare dependencies"
+        shell: bash
+        run: |
+          python3 -m pip install wheel setuptools
+      - name: "Build package"
+        shell: bash
+        run: |
+          python3 setup.py bdist_wheel
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: build
+          path: "dist/petersburgedu_wrap-${{ env.WHL_VERSION }}-py3-none-any.whl"

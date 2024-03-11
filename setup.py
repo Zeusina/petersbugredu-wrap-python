@@ -12,18 +12,19 @@ setup(
     author='zeusina',
     author_email='kachusov_k@outlook.com',
     description='This is module for work with petersburgedu website API',
+    license = "MIT",
     long_description=readme(),
     long_description_content_type='text/markdown',
-    url='',
+    url='https://github.com/Zeusina/petersbugredu-wrap-python',
     packages=find_packages(),
     classifiers=[
         'Programming Language :: Python :: 3.10',
-        'Operating System :: OS Independent'
+        'Operating System :: OS Independent',
+        'Development Status :: 3 - Alpha',
     ],
     keywords='api python petersburgedu',
     project_urls={
-        'Source': 'https://github.com/Zeusina/petersbugredu-wrap-python',
-        'Documentation': ''
+        "Source": "https://github.com/Zeusina/petersbugredu-wrap-python",
     },
     python_requires='>=3.8',
     install_requires=['requests>=2.25.1'],

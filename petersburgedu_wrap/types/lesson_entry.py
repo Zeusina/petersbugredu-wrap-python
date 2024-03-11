@@ -2,10 +2,10 @@ import dataclasses
 import datetime
 from typing import Any
 
-from petersbugredu_wrap.types.action_payload import ActionPayload
-from petersbugredu_wrap.types.estimate import Estimate
-from petersbugredu_wrap.types.identity import Identity
-from petersbugredu_wrap.types.task import Task
+from petersburgedu_wrap.types.action_payload import ActionPayload
+from petersburgedu_wrap.types.estimate import Estimate
+from petersburgedu_wrap.types.identity import Identity
+from petersburgedu_wrap.types.task import Task
 
 
 @dataclasses.dataclass

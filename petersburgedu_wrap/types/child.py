@@ -4,15 +4,15 @@ import logging
 
 import requests
 
-from petersbugredu_wrap.types.action_payload import ActionPayload
-from petersbugredu_wrap.types.estimate import Estimate
-from petersbugredu_wrap.types.lesson_entry import LessonEntry
-from petersbugredu_wrap.types.mark_entry import MarkEntry
-from petersbugredu_wrap.types.task import Task
-from petersbugredu_wrap.types.teacher import Teacher
-from petersbugredu_wrap.types.identity import Identity
-from petersbugredu_wrap.types.education import Education
-from petersbugredu_wrap.utils import endpoints, request_parameters
+from petersburgedu_wrap.types.action_payload import ActionPayload
+from petersburgedu_wrap.types.estimate import Estimate
+from petersburgedu_wrap.types.lesson_entry import LessonEntry
+from petersburgedu_wrap.types.mark_entry import MarkEntry
+from petersburgedu_wrap.types.task import Task
+from petersburgedu_wrap.types.teacher import Teacher
+from petersburgedu_wrap.types.identity import Identity
+from petersburgedu_wrap.types.education import Education
+from petersburgedu_wrap.utils import endpoints, request_parameters
 
 
 @dataclasses.dataclass
